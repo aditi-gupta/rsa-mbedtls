@@ -14,9 +14,16 @@ then, get manticore to flip a bit
 next steps will be to get out the partials and try to decrypt, but that's way in the future for now
 '''
 
-target = 'rsa_sign'
+target = './programs/pkey/rsa_sign example.txt'
 m_correct = Manticore(target)
+# m_correct.verbosity(2)
 @m_correct.hook(0xc73a) #the end of the section of the mbedtls_rsa_private function where the decrypted message is outputed
+
+def hook(state):
+	cpu = state.cpu
+	print 0xc73a
+	sig = cpu.read_int(cpu.RBX)
+	print sig
 
 # question: in a manticore script, where would you specify the argv (the file you want to sign)?
 
