@@ -1,3 +1,5 @@
+#!/usr/bin/python 3.5.2
+
 # before running this, you need to run chmod a+x gdb_readencrypted.sh and chmod a+x gdb_flip.sh
 
 import csv
@@ -18,7 +20,7 @@ correct_decrypted = mu.read_memory(0x6ea2b0, 0x6ea3b0)
 os.remove("gdb.txt")
 
 for i in range (0x40d27b, 0x40d41b): # (0x40d2a7, 0x40d2a8): 
-	subprocess.call(["./gdb_flip.sh", str(i)])
+	subprocess.call(["./gdb_flip.sh", str(i)], timeout=60)
 	m = mu.read_memory(0x6f08a0, 0x6f09a0)
 	i_data = {}
 	i_data['Memory Address'] = hex(i)
@@ -37,10 +39,8 @@ for i in range (0x40d27b, 0x40d41b): # (0x40d2a7, 0x40d2a8):
 
 	all_data.append(i_data)
 
-print all_data
-
 fields = ['Memory Address', 'Partial Signatures', 'Private Keys', 'Correct?']
-with open('results_mbedtls_checked.csv', 'wb') as f:
+with open('results_mbedtls_final.csv', 'w') as f:
     writer = csv.DictWriter(f, fieldnames = fields)
     writer.writeheader()
     writer.writerows(all_data)
