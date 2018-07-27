@@ -20,23 +20,26 @@ correct_decrypted = mu.read_memory(0x6ea2b0, 0x6ea3b0)
 os.remove("gdb.txt")
 
 for i in range (0x40d27b, 0x40d41b): # (0x40d2a7, 0x40d2a8): 
-	subprocess.call(["./gdb_flip.sh", str(i)], timeout=60)
-	m = mu.read_memory(0x6f08a0, 0x6f09a0)
-	i_data = {}
-	i_data['Memory Address'] = hex(i)
-	s = mu.read_file(sigfile)
-	if not(s == "failed"):
-		partials = mu.get_partial_sigs()
-		i_data['Partial Signatures'] = partials
-		os.remove("gdb.txt")
-		pkeys = mu.solve_private_keys(e, s, m, n)
-		i_data['Private Keys'] = pkeys
-		os.remove(sigfile)
-		decrypted = mu.decrypt(pkeys, e, n, encrypted)
-		i_data['Correct?'] = mu.check_private_keys(correct_decrypted, decrypted)
-	else:
+	try:
+		subprocess.call(["./gdb_flip.sh", str(i)], timeout=60)
+		m = mu.read_memory(0x6f08a0, 0x6f09a0)
+		i_data = {}
+		i_data['Memory Address'] = hex(i)
+		s = mu.read_file(sigfile)
+		if not(s == "failed"):
+			partials = mu.get_partial_sigs()
+			i_data['Partial Signatures'] = partials
+			os.remove("gdb.txt")
+			pkeys = mu.solve_private_keys(e, s, m, n)
+			i_data['Private Keys'] = pkeys
+			os.remove(sigfile)
+			decrypted = mu.decrypt(pkeys, e, n, encrypted)
+			i_data['Correct?'] = mu.check_private_keys(correct_decrypted, decrypted)
+		else:
+			i_data['Private Keys'] = "failed"
+	except subprocess.TimeoutExpired:
 		i_data['Private Keys'] = "failed"
-
+		continue
 	all_data.append(i_data)
 
 fields = ['Memory Address', 'Partial Signatures', 'Private Keys', 'Correct?']
